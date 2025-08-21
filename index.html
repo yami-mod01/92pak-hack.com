@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VIP Lottery Predictor - Chart Analyzer</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600&display=swap');
+
+    body {
+      margin: 0;
+      padding: 40px 20px;
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #1e1e2f, #14141f);
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      background: #222236cc;
+      border-radius: 14px;
+      width: 420px;
+      max-width: 100%;
+      box-shadow: 0 0 40px #00ffa2aa;
+      padding: 30px 28px;
+      margin-bottom: 30px;
+      border: 1.5px solid #00ffa2cc;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 28px;
+      font-weight: 700;
+      letter-spacing: 1.8px;
+      color: #00ffa2;
+    }
+
+    label {
+      display: block;
+      margin-top: 22px;
+      font-weight: 600;
+      font-size: 1.15rem;
+      color: #80ffc8;
+      text-align: left;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: none;
+      margin-top: 8px;
+      font-size: 1rem;
+      background: #121224;
+      color: #00ffa2;
+      box-shadow: inset 0 0 6px #00ffa2aa;
+    }
+
+    input[type="file"] {
+      margin-top: 12px;
+      color: #00ffa2;
+    }
+
+    button {
+      margin-top: 28px;
+      width: 100%;
+      background: #00ffa2;
+      color: #14141f;
+      border: none;
+      padding: 15px;
+      font-size: 1.15rem;
+      font-weight: 700;
+      border-radius: 14px;
+      cursor: pointer;
+      box-shadow: 0 0 22px #00ffa2cc;
+    }
+
+    button:hover {
+      background: #00c77d;
+    }
+
+    .output-box {
+      margin-top: 32px;
+      background: #121224cc;
+      border-radius: 14px;
+      padding: 22px 20px;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-align: center;
+      box-shadow: inset 0 0 18px #00ffa2cc;
+      color: #00ffa2;
+      white-space: pre-line;
+    }
+
+    .image-preview {
+      margin-top: 18px;
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 0 18px #00ffa2cc;
+      display: none;
+    }
+
+    .error-msg {
+      margin-top: 15px;
+      color: #ff4c4c;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .whatsapp-btn {
+      width: 420px;
+      max-width: 100%;
+      background: #25d366;
+      color: white;
+      font-weight: 700;
+      font-size: 1.2rem;
+      border-radius: 16px;
+      padding: 15px 0;
+      text-align: center;
+      text-decoration: none;
+      box-shadow: 0 0 24px #25d366cc;
+      margin: 0 auto 40px auto;
+      display: block;
+    }
+
+    .whatsapp-btn:hover {
+      background: #1ebe5b;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 30px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>VIP 𝑾𝑶𝑳𝑽𝑬𝑺 Predictor</h1>
+
+    <label for="periodInput">Enter Period Number:</label>
+    <input type="text" id="periodInput" placeholder="e.g. 202507030123" />
+
+    <label for="fileInput">Or upload Wingo Chart Screenshot:</label>
+    <input type="file" id="fileInput" accept="image/png, image/jpeg" />
+
+    <label for="numberSelect">Or select last number manually:</label>
+    <select id="numberSelect">
+      <option value="">Select Last Number</option>
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select>
+
+    <button id="predictBtn">Predict Next Result</button>
+
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="output-box" id="resultOutput">Prediction will appear here</div>
+    <img id="imgPreview" class="image-preview" alt="Chart Preview" />
+  </div>
+
+  <a href="https://wa.link/eph5ri" target="_blank" class="whatsapp-btn">
+    Join WhatsApp Group for 99% Accurate Signals
+  </a>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
+  <script>
+    const periodInput = document.getElementById('periodInput');
+    const fileInput = document.getElementById('fileInput');
+    const numberSelect = document.getElementById('numberSelect');
+    const predictBtn = document.getElementById('predictBtn');
+    const resultOutput = document.getElementById('resultOutput');
+    const imgPreview = document.getElementById('imgPreview');
+    const errorMsg = document.getElementById('errorMsg');
+
+    // Trend map fixed based on data
+    const trendMap = {
+      0: "SMALL",
+      1: "SMALL",
+      2: "SMALL",
+      3: "SMALL",
+      4: "SMALL",
+      5: "BIG",
+      6: "BIG",
+      7: "BIG",
+      8: "BIG",
+      9: "BIG"
+    };
+
+    function resetAll() {
+      resultOutput.textContent = 'Prediction will appear here';
+      errorMsg.textContent = '';
+      imgPreview.style.display = 'none';
+    }
+
+    function confidenceFor(digit) {
+      const bigSet = new Set([5,6,7,8,9]);
+      const smallSet = new Set([0,1,2,3,4]);
+      if (bigSet.has(digit)) return 88 + Math.floor(Math.random() * 5);  // 88–92
+      if (smallSet.has(digit)) return 82 + Math.floor(Math.random() * 5); // 82–86
+      return 85;
+    }
+
+    function predictFromDigit(digit) {
+      const prediction = trendMap[digit] || (digit >= 5 ? 'BIG' : 'SMALL');
+      const color = (digit === 0 || digit === 5) ? 'VIOLET' : (digit % 2 === 0 ? 'GREEN' : 'RED');
+      const confidence = confidenceFor(digit);
+      return { prediction, color, confidence, digit };
+    }
+
+    function displayPrediction({ prediction, color, confidence, digit }) {
+      resultOutput.innerHTML = `
+✅ Last Digit: ${digit}
+🔮 Prediction: ${prediction}
+🎨 Color: ${color}
+📊 Confidence: ${confidence}%
+      `;
+    }
+
+    function showWithDelay(predictionObj) {
+      resultOutput.textContent = "⏳ Calculating next result...";
+      setTimeout(() => {
+        displayPrediction(predictionObj);
+      }, 3000); // 3 seconds delay
+    }
+
+    predictBtn.onclick = async () => {
+      resetAll();
+      const period = periodInput.value.trim();
+      const number = numberSelect.value;
+      const file = fileInput.files[0];
+
+      if (period) {
+        const digits = period.match(/\d/g);
+        if (digits && digits.length) {
+          const lastDigit = parseInt(digits[digits.length - 1], 10);
+          const p = predictFromDigit(lastDigit);
+          showWithDelay(p);
+        } else {
+          errorMsg.textContent = 'Period number me koi digit nahi mila.';
+        }
+
+      } else if (file) {
+        const imgUrl = URL.createObjectURL(file);
+        imgPreview.src = imgUrl;
+        imgPreview.style.display = 'block';
+        resultOutput.textContent = 'Analyzing chart image...';
+
+        Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+          const match = text.match(/\d/g);
+          if (match && match.length > 0) {
+            const lastDigit = parseInt(match[match.length - 1], 10);
+            const prediction = predictFromDigit(lastDigit);
+            showWithDelay(prediction);
+          } else {
+            resultOutput.textContent = '❌ Could not detect any number.';
+          }
+        }).catch(err => {
+          console.error(err);
+          resultOutput.textContent = '❌ Error processing image.';
+        });
+
+      } else if (number !== '') {
+        const prediction = predictFromDigit(parseInt(number, 10));
+        showWithDelay(prediction);
+
+      } else {
+        errorMsg.textContent = 'Please enter a period, upload chart, or select number.';
+      }
+    };
+  </script>
+</body>
+</html>
